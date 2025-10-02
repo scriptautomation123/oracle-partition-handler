@@ -22,6 +22,9 @@ INSERT INTO p_tech (id, name, description)
 INSERT INTO p_tech (id, name, description)
      VALUES (5, 'REFERENCE', 'Partitioned by Reference');
 
+INSERT INTO p_tech (id, name, description)
+     VALUES (6, 'AUTO_LIST', 'Automatic List Partitioning (19c)');
+
 ALTER TABLE P_TECH
 READ ONLY;
 
