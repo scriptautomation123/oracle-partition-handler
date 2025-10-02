@@ -13,6 +13,7 @@ SPOOL partition_handler_install.log
 @@partition_config.pck
 @@partition_tools.pck
 @@partition_redefine.pck
+@@partition_redefine_19c.pck
 @@partition_handler.pck
 @@context.sql
 

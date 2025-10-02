@@ -13,15 +13,16 @@ The Oracle Partition Handler is an enterprise-grade PL/SQL framework designed to
 ## Table of Contents
 
 1. [Core Features](#core-features)
-2. [Architecture](#architecture)
-3. [Database Schema](#database-schema)
-4. [Core Packages](#core-packages)
-5. [Installation](#installation)
-6. [Configuration](#configuration)
-7. [Usage Examples](#usage-examples)
-8. [Extension & Enhancement Guide](#extension--enhancement-guide)
-9. [Key Design Patterns](#key-design-patterns)
-10. [Troubleshooting](#troubleshooting)
+2. [Oracle 19c Features](#oracle-19c-features) ⭐
+3. [Architecture](#architecture)
+4. [Database Schema](#database-schema)
+5. [Core Packages](#core-packages)
+6. [Installation](#installation)
+7. [Configuration](#configuration)
+8. [Usage Examples](#usage-examples)
+9. [Extension & Enhancement Guide](#extension--enhancement-guide)
+10. [Key Design Patterns](#key-design-patterns)
+11. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -39,7 +40,10 @@ The Oracle Partition Handler is an enterprise-grade PL/SQL framework designed to
 - **HASH Partitioning**: Even data distribution across partitions
 - **INTERVAL Partitioning**: Automatic partition creation for range partitions
 - **REFERENCE Partitioning**: Parent-child relationship partitioning
+- **AUTO_LIST Partitioning** ⭐ **(Oracle 19c)**: Automatic LIST partition creation for new values
 - **Composite Partitioning**: Partition + Subpartition combinations
+  - Traditional: RANGE-RANGE, RANGE-HASH, RANGE-LIST, LIST-RANGE, LIST-HASH, LIST-LIST
+  - **Oracle 19c** ⭐: HASH-RANGE, HASH-HASH, HASH-LIST
 
 ### Advanced Operations
 - **Partition Split**: Splits existing partitions when boundaries change
@@ -48,6 +52,47 @@ The Oracle Partition Handler is an enterprise-grade PL/SQL framework designed to
 - **Partition Drop**: Removes obsolete partitions
 - **Partition Rename**: Renames partitions to match naming conventions
 - **Index Synchronization**: Keeps local and global indexes synchronized with partition operations
+
+---
+
+## Oracle 19c Features
+
+**New Package**: `PARTITION_REDEFINE_19C` provides modern partition conversion capabilities specifically designed for Oracle 19c.
+
+### Key 19c Enhancements
+
+#### AUTO_LIST Partitioning
+- **Automatic partition creation** for new LIST values
+- No need to pre-define all partitions
+- Ideal for evolving categorical data
+- **Technique ID**: 6
+
+#### HASH-Based Composite Partitioning
+Oracle 19c introduces HASH as a primary partition method in composite partitioning:
+- **HASH-RANGE**: Even distribution + time-based subdivision
+- **HASH-HASH**: Maximum parallel processing capability
+- **HASH-LIST**: Load balancing + categorical subdivision
+
+#### Modern Conversion Operations
+
+1. **convert_to_single_level_partition**: Convert regular table to single-level partitioning
+2. **convert_to_composite_partition**: Convert regular table to composite partitioning
+3. **convert_single_to_composite**: Convert single-level to composite partitioning
+
+#### Online vs Offline Conversion
+- Automatic detection of online conversion capability
+- Minimal downtime with incremental sync
+- Table copy with rename and sync mechanism
+- Atomic switchover (table → table_OLD, table_NEW → table)
+
+#### Advanced Features
+- Parallel processing support
+- Constraint management (disable/enable)
+- Index copying with _NEW suffix cleanup
+- Status monitoring and sync loops
+- Comprehensive error handling and logging
+
+**📖 Full Documentation**: See [README_19C.md](README_19C.md) for complete guide with examples
 
 ---
 
@@ -315,6 +360,42 @@ DBMS_REDEFINITION.CONS_USE_PK     -- For tables with PK
 5. Copy dependent objects (indexes, constraints, triggers, privileges)
 6. Finish redefinition
 7. Clean up temporary objects
+
+### 3a. PARTITION_REDEFINE_19C (Oracle 19c Enhanced Conversion) ⭐
+**File**: `partition_redefine_19c.pck`  
+**Version**: 1.0.0
+
+**Purpose**: Modern partition conversion utilities specifically for Oracle 19c, supporting new partition techniques and advanced conversion strategies.
+
+**Key Features**:
+- Support for AUTO_LIST partitioning (Oracle 19c)
+- Support for HASH-based composite partitioning (HASH-RANGE, HASH-HASH, HASH-LIST)
+- Online and offline conversion strategies
+- Incremental sync with table rename mechanism
+- Automatic online capability detection
+- Parallel processing support
+
+**Key Functions**:
+- `convert_to_single_level_partition()` - Convert regular table to single-level partitioning
+- `convert_to_composite_partition()` - Convert regular table to composite partitioning
+- `convert_single_to_composite()` - Convert single-level to composite partitioning
+- `is_online_conversion_capable()` - Check if online conversion is possible
+- `generate_partition_ddl_19c()` - Generate Oracle 19c partition DDL
+
+**Key Procedures**:
+- `execute_conversion_with_sync()` - Full conversion workflow with sync and rename
+- `cleanup_object_names()` - Rename indexes/constraints from _NEW to original names
+
+**Conversion Workflow**:
+1. Create new table with `_NEW` suffix
+2. Copy constraints (disabled) and indexes
+3. Initial data load (INSERT INTO SELECT)
+4. Incremental sync loop (for online strategy)
+5. Enable and validate constraints
+6. Atomic rename (original → `_OLD`, `_NEW` → original)
+7. Optional cleanup of object names
+
+**📖 See [README_19C.md](README_19C.md) for complete documentation and examples**
 
 ### 4. PARTITION_TOOLS (Utility Functions)
 **File**: `partition_tools.pck`  
@@ -1271,13 +1352,14 @@ For questions, enhancements, or bug reports:
 ## Appendix: Quick Reference
 
 ### Partition Technique IDs
-| ID | Name      | Description                  |
-|----|-----------|------------------------------|
-| 1  | LIST      | Discrete value partitioning  |
-| 2  | RANGE     | Range-based partitioning     |
-| 3  | HASH      | Hash-based partitioning      |
-| 4  | INTERVAL  | Automatic range partitioning |
-| 5  | REFERENCE | Parent-child partitioning    |
+| ID | Name      | Description                           |
+|----|-----------|---------------------------------------|
+| 1  | LIST      | Discrete value partitioning           |
+| 2  | RANGE     | Range-based partitioning              |
+| 3  | HASH      | Hash-based partitioning               |
+| 4  | INTERVAL  | Automatic range partitioning          |
+| 5  | REFERENCE | Parent-child partitioning             |
+| 6  | AUTO_LIST | Automatic LIST partition (19c) ⭐     |
 
 ### Object Type IDs
 | ID | Name  |

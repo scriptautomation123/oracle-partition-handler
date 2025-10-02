@@ -33,6 +33,8 @@
   c_par_tech_interval     CONSTANT p_tech.name%TYPE := 'INTERVAL';
   c_par_tech_reference_id CONSTANT PLS_INTEGER := 5;
   c_par_tech_reference    CONSTANT p_tech.name%TYPE := 'REFERENCE';
+  c_par_tech_auto_list_id CONSTANT PLS_INTEGER := 6;
+  c_par_tech_auto_list    CONSTANT p_tech.name%TYPE := 'AUTO_LIST';
   -- Data types
   c_dt_date             CONSTANT VARCHAR2(10) := 'DATE';
   c_dt_number           CONSTANT VARCHAR2(10) := 'NUMBER';
